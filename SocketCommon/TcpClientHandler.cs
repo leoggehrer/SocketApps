@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SocketCommon.Extensions;
 
 namespace SocketCommon
 {
@@ -18,28 +20,35 @@ namespace SocketCommon
         {
             return Task.Factory.StartNew(() =>
             {
+                var connectionQuit = false;
                 var buffer = new byte[1024];
-                var command = default(string);
 
-                while (command == null || command.Equals(SocketCommand.Quit.ToString()) == false)
+                while (connectionQuit == false)
                 {
                     var readLen = 0;
-                    var stringData = string.Empty;
+                    var strData = string.Empty;
                     var stream = TcpClient.GetStream();
 
                     while ((readLen = stream.Read(buffer, 0, buffer.Length)) == buffer.Length)
                     {
-                        stringData += Encoding.ASCII.GetString(buffer, 0, readLen);
+                        strData += Encoding.ASCII.GetString(buffer, 0, readLen);
                     }
                     if (readLen > 0)
                     {
-                        stringData += Encoding.ASCII.GetString(buffer, 0, readLen);
-                        System.Diagnostics.Debug.WriteLine(stringData);
+                        strData += Encoding.ASCII.GetString(buffer, 0, readLen);
+                        System.Diagnostics.Debug.WriteLine(strData);
                         try
                         {
-                            Models.Message message = JsonSerializer.Deserialize<Models.Message>(stringData);
+                            var models = strData.GetAllTags(new string[] { "{", "}" })
+                                                .Select(t => JsonSerializer.Deserialize<Models.Message>(t.FullText));
 
-                            command = message.Command;
+                            foreach (var model in models)
+                            {
+                                if (model.Command.GetValueOrDefault().Equals(SocketCommand.Quit.ToString()))
+                                {
+                                    connectionQuit = true;
+                                }
+                            }
                         }
                         catch (Exception ex)
                         {

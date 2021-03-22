@@ -5,13 +5,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 
 namespace SocketClient.ConApp
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("SocketClientApp is running...");
 
@@ -25,13 +24,13 @@ namespace SocketClient.ConApp
 
             stream.Write(bytes, 0, bytes.Length);
             stream.Flush();
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
             //stream.Close();
 
             //using var stream1 = client.GetStream();
             stream.Write(bytes, 0, bytes.Length);
             stream.Flush();
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
             //stream1.Close();
 
             message.Command = SocketCommand.Quit.ToString();
@@ -41,7 +40,7 @@ namespace SocketClient.ConApp
             //using var stream2 = client.GetStream();
             stream.Write(bytes, 0, bytes.Length);
             stream.Flush();
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
             //stream2.Close();
 
             stream.Close();
