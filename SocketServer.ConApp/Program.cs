@@ -1,14 +1,13 @@
 ﻿using SocketCommon;
 using System;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace SocketServer.ConApp
 {
     class Program
     {
-        static Task Main(string[] args)
+        static Task Main(/*string[] args*/)
         {
             Console.WriteLine("SocketServerApp is running...");
 

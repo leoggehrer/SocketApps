@@ -24,20 +24,20 @@ namespace SocketCommon
                 while (command == null || command.Equals(SocketCommand.Quit.ToString()) == false)
                 {
                     var readLen = 0;
-                    var jsonData = string.Empty;
+                    var stringData = string.Empty;
                     var stream = TcpClient.GetStream();
 
                     while ((readLen = stream.Read(buffer, 0, buffer.Length)) == buffer.Length)
                     {
-                        jsonData += Encoding.ASCII.GetString(buffer, 0, readLen);
+                        stringData += Encoding.ASCII.GetString(buffer, 0, readLen);
                     }
                     if (readLen > 0)
                     {
-                        jsonData += Encoding.ASCII.GetString(buffer, 0, readLen);
-                        System.Diagnostics.Debug.WriteLine(jsonData);
+                        stringData += Encoding.ASCII.GetString(buffer, 0, readLen);
+                        System.Diagnostics.Debug.WriteLine(stringData);
                         try
                         {
-                            Models.Message message = JsonSerializer.Deserialize<Models.Message>(jsonData);
+                            Models.Message message = JsonSerializer.Deserialize<Models.Message>(stringData);
 
                             command = message.Command;
                         }
