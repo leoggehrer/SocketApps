@@ -4,26 +4,30 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SocketCommon.Common;
 using SocketCommon.Extensions;
 
-namespace SocketCommon
+namespace SocketCommon.Server
 {
-    public class TcpClientHandler
+    public class TcpClientHandler : Contracts.IObserver
     {
+        public bool IsRunning { get; private set; }
         private TcpClient TcpClient { get; set; }
         public TcpClientHandler(TcpClient tcpClient)
         {
             TcpClient = tcpClient ?? throw new ArgumentNullException(nameof(tcpClient));
+
+            MessageDistributer.Instance.AddObserver(this);
         }
 
         public Task StartAsync()
         {
             return Task.Factory.StartNew(() =>
             {
-                var connectionQuit = false;
                 var buffer = new byte[1024];
 
-                while (connectionQuit == false)
+                IsRunning = true;
+                while (IsRunning)
                 {
                     var readLen = 0;
                     var strData = string.Empty;
@@ -46,7 +50,15 @@ namespace SocketCommon
                             {
                                 if (model.Command.GetValueOrDefault().Equals(SocketCommand.Quit.ToString()))
                                 {
-                                    connectionQuit = true;
+                                    IsRunning = false;
+                                    model.Command = SocketCommand.Disconnected.ToString();
+                                    model.Body = string.Empty;
+                                    MessageDistributer.Instance.Distribute(model);
+                                }
+                                else
+                                {
+                                    model.Command = SocketCommand.DistributeMessage.ToString();
+                                    MessageDistributer.Instance.Distribute(model);
                                 }
                             }
                         }
@@ -56,9 +68,25 @@ namespace SocketCommon
                         }
                     }
                 }
+                MessageDistributer.Instance.RemoveObserver(this);
                 TcpClient.Close();
+                TcpClient.Dispose();
+                TcpClient = null;
                 System.Diagnostics.Debug.WriteLine("TcpClient closed");
             });
+        }
+
+        public void Notify(Pattern.Observable sender, object eventArgs)
+        {
+            if (eventArgs is Models.Message msg)
+            {
+                var stream = TcpClient.GetStream();
+                var jsonData = JsonSerializer.Serialize<Models.Message>(msg);
+                var bytes = Encoding.ASCII.GetBytes(jsonData);
+
+                stream.Write(bytes);
+                stream.Flush();
+            }
         }
     }
 }

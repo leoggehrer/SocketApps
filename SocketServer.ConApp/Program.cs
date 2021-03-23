@@ -1,13 +1,14 @@
-﻿using SocketCommon;
+﻿using SocketCommon.Common;
+using SocketCommon.Server;
 using System;
 using System.Net;
 using System.Threading.Tasks;
 
 namespace SocketServer.ConApp
 {
-    class Program
+    internal class Program
     {
-        static Task Main(/*string[] args*/)
+        private static Task Main(/*string[] args*/)
         {
             Console.WriteLine("SocketServerApp is running...");
 
@@ -19,9 +20,9 @@ namespace SocketServer.ConApp
             while (true)
             {
                 var handler = tcpListener.AcceptTcpClient();
-                var socketHandler = new TcpClientHandler(handler);
+                var clientHandler = new TcpClientHandler(handler);
 
-                socketHandler.StartAsync();
+                clientHandler.StartAsync();
             }
         }
     }

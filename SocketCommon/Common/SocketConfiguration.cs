@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace SocketCommon
+namespace SocketCommon.Common
 {
     public partial class SocketConfiguration
     {
